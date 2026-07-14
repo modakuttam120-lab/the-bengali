@@ -1,0 +1,6 @@
+{
+  "name": "The Bengali Pedia",
+  "description": "A complete production-ready multilingual AI-powered news website focusing on geopolitics, politics, and technology, featuring real-time news aggregation and an admin dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
