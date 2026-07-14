@@ -36,40 +36,54 @@ const CATEGORIES = [
 
 const LOCALIZED_LABELS = {
   title: {
-    bn: "দ্য বেঙ্গলি পিডিয়া"
+    bn: "দ্য বেঙ্গলি পিডিয়া",
+    en: "The Bengali Pedia",
+    hi: "द बंगाली पीडिया"
   },
   tagline: {
-    bn: "নির্ভীক • নিরপেক্ষ • তথ্যনিষ্ঠ ভূ-রাজনৈতিক ও জাতীয় সংবাদ পোর্টাল"
+    bn: "নির্ভীক • নিরপেক্ষ • তথ্যনিষ্ঠ ভূ-রাজনৈতিক ও জাতীয় সংবাদ পোর্টাল",
+    en: "Fearless • Independent • Fact-based Geopolitical & National News",
+    hi: "निडर • स्वतंत्र • तथ्य-आधारित भू-राजनीतिक और राष्ट्रीय समाचार"
   },
   searchPlaceholder: {
-    bn: "সংবাদ অনুসন্ধান করুন..."
+    bn: "সংবাদ অনুসন্ধান করুন...",
+    en: "Search news...",
+    hi: "समाचार खोजें..."
   },
   bookmarks: {
-    bn: "বুকমার্কস"
+    bn: "বুকমার্কস",
+    en: "Bookmarks",
+    hi: "बुकमार्क"
   },
   admin: {
-    bn: "অ্যাডমিন পোর্টাল"
+    bn: "অ্যাডমিন পোর্টাল",
+    en: "Admin Portal",
+    hi: "एडमिन पोर्टल"
   },
   factCheckLabel: {
-    bn: "ফ্যাক্ট চেক"
+    bn: "ফ্যাক্ট চেক",
+    en: "Fact Check",
+    hi: "तथ्य जाँच"
   },
   allNews: {
-    bn: "সব খবর"
+    bn: "সব খবর",
+    en: "All News",
+    hi: "सभी समाचार"
   }
 };
 
 const LOCALIZED_CATEGORIES: Record<string, Record<Language, string>> = {
-  "Geopolitics": { bn: "ভূ-রাজনীতি" },
-  "Indian Politics": { bn: "ভারতীয় রাজনীতি" },
-  "West Bengal Politics": { bn: "পশ্চিমবঙ্গ রাজনীতি" },
-  "Current Affairs": { bn: "সাম্প্রতিকী" },
-  "Technology": { bn: "প্রযুক্তি" },
-  "Economy": { bn: "অর্থনীতি" },
-  "Defence": { bn: "প্রতিরক্ষা" },
-  "Science": { bn: "বিজ্ঞান" },
-  "AI": { bn: "কৃত্রিম বুদ্ধিমত্তা (AI)" },
-  "Fact Check": { bn: "সত্যতা যাচাই" },
-  "Editorial": { bn: "সম্পাদকীয়" }
+  "Geopolitics": { bn: "ভূ-রাজনীতি", en: "Geopolitics", hi: "भू-राजनीति" },
+  "Indian Politics": { bn: "ভারতীয় রাজনীতি", en: "Indian Politics", hi: "भारतीय राजनीति" },
+  "West Bengal Politics": { bn: "পশ্চিমবঙ্গ রাজনীতি", en: "West Bengal Politics", hi: "पश्चिम बंगाल राजनीति" },
+  "Current Affairs": { bn: "সাম্প্রতিকী", en: "Current Affairs", hi: "सामयिकी" },
+  "Technology": { bn: "প্রযুক্তি", en: "Technology", hi: "प्रौद्योगिकी" },
+  "Economy": { bn: "অর্থনীতি", en: "Economy", hi: "अर्थव्यवस्था" },
+  "Defence": { bn: "প্রতিরক্ষা", en: "Defence", hi: "रक्षा" },
+  "Science": { bn: "বিজ্ঞান", en: "Science", hi: "विज्ञान" },
+  "AI": { bn: "কৃত্রিম বুদ্ধিমত্তা (AI)", en: "AI", hi: "कृत्रिम बुद्धिमत्ता" },
+  "Fact Check": { bn: "সত্যতা যাচাই", en: "Fact Check", hi: "तथ्य जाँच" },
+  "Editorial": { bn: "সম্পাদকীয়", en: "Editorial", hi: "संपादकीय" }
 };
 
 /*
@@ -189,6 +203,26 @@ export function Header({
           </div>
 
 
+
+          <span className="text-slate-300">|</span>
+
+          {/* Language Selector */}
+          <div className="flex items-center space-x-1 bg-slate-200/60 rounded-full p-0.5 border border-slate-200">
+            <Globe className="w-3 h-3 text-slate-500 ml-1.5 mr-0.5" />
+            {(["bn", "en", "hi"] as const).map((lang) => (
+              <button
+                key={lang}
+                onClick={() => onLanguageChange(lang)}
+                className={`px-2.5 py-0.5 text-[10px] font-black rounded-full transition duration-150 uppercase cursor-pointer ${
+                  currentLanguage === lang
+                    ? "bg-red-600 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-300/50"
+                }`}
+              >
+                {lang === "bn" ? "বাং" : lang === "en" ? "EN" : "हिं"}
+              </button>
+            ))}
+          </div>
 
           <span className="text-slate-300">|</span>
 

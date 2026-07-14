@@ -36,40 +36,6 @@ const FONT_CLASSES = {
 
 const LOCALIZED_HOMEPAGE = {
   trendingTitle: {
-    bn: "চলতি হাওয়া (Trending)"
-  },
-  latestTitle: {
-    bn: "সর্বশেষ আপডেট"
-  },
-  featuredTitle: {
-    bn: "বিশেষ প্রতিবেদন"
-  },
-  newsletterHeader: {
-    bn: "সরাসরি ইনবক্সে খবরের আপডেট পান"
-  },
-  newsletterDesc: {
-    bn: "আমাদের নিয়মিত বুলেটিনে সাবস্ক্রাইব করুন এবং ভূ-রাজনীতি ও প্রযুক্তির গভীর বিশ্লেষণগুলো মিস করবেন না।"
-  },
-  subscribeBtn: {
-    bn: "যুক্ত হোন"
-  },
-  subscribeSuccess: {
-    bn: "আপনাকে ধন্যবাদ! সাবস্ক্রিপশন সফল হয়েছে।"
-  },
-  footerAbout: {
-    bn: "দ্য বেঙ্গলি পিডিয়া হলো একটি সর্বাধুনিক এআই-চালিত বহুভাষিক সংবাদ প্ল্যাটফর্ম, যা বিশ্ব রাজনীতি, জাতীয় ইস্যু এবং বিজ্ঞান-প্রযুক্তির চুলচেরা বিশ্লেষণ নির্ভীকভাবে পরিবেশন করে।"
-  },
-  noResults: {
-    bn: "কোনো খবর পাওয়া যায়নি। অনুগ্রহ করে অন্য কোনো কি-ওয়ার্ড দিয়ে চেষ্টা করুন।"
-  },
-  aboutPlatformTitle: {
-    bn: "আমাদের সম্পর্কে"
-  }
-};
-
-/*
-const LOCALIZED_HOMEPAGE_OLD = {
-  trendingTitle: {
     bn: "চলতি হাওয়া (Trending)",
     en: "Trending Stories",
     hi: "ट्रेंडिंग कहानियां"
@@ -120,8 +86,6 @@ const LOCALIZED_HOMEPAGE_OLD = {
     hi: "हमारे बारे में"
   }
 };
-
-*/
 export default function App() {
   const [currentLanguage, setCurrentLanguage] = useState<Language>("bn");
   const [fontSize, setFontSize] = useState<"sm" | "base" | "lg" | "xl">("base");

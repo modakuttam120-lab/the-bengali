@@ -1,4 +1,4 @@
-export type Language = "bn";
+export type Language = "bn" | "en" | "hi";
 
 export interface ArticleTranslation {
   title: string;

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { 
   ArrowLeft, Eye, ThumbsUp, Calendar, User, Bookmark, Share2, Sparkles, 
-  Send, ShieldCheck, AlertTriangle, CheckCircle, Info, Heart, Copy, Check 
+  Send, ShieldCheck, AlertTriangle, CheckCircle, Info, Heart, Copy, Check, Clock,
+  Globe, ExternalLink
 } from "lucide-react";
 import { Article, Comment, Language } from "../types";
 import { handleImageLoadError } from "../utils/imageFallback";
@@ -30,7 +31,10 @@ const LOCALIZED_LABELS = {
   submitComment: { bn: "মন্তব্য পোস্ট করুন" },
   relatedArticles: { bn: "সম্পর্কিত খবর" },
   copied: { bn: "লিঙ্ক কপি করা হয়েছে!" },
-  share: { bn: "শেয়ার করুন" }
+  share: { bn: "শেয়ার করুন" },
+  readTime: { bn: "মিনিট পড়া" },
+  source: { bn: "উৎস:" },
+  viewOriginal: { bn: "মূল উৎস দেখুন" }
 };
 
 /*
@@ -263,6 +267,15 @@ export function ArticleView({
             <Eye className="w-4 h-4" />
             <span>{article.views} views</span>
           </span>
+          {(article.sourceName || article.url) && (
+            <>
+              <span>•</span>
+              <span className="flex items-center space-x-1">
+                <Globe className="w-4 h-4 text-indigo-500" />
+                <span>{article.sourceName || "The Bengali Pedia"}</span>
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -313,13 +326,39 @@ export function ArticleView({
       )}
 
       {/* Core Article Body Content */}
-      <div className={`prose max-w-none text-slate-800 leading-relaxed border-b border-slate-200 pb-8 ${fontSizeClass}`}>
+      <div className={`prose max-w-none text-slate-800 leading-relaxed border-b border-slate-200 pb-6 ${fontSizeClass}`}>
         {article.content.split("\n\n").map((para, i) => para.trim() && (
           <p key={i} className="mb-4">
             {para}
           </p>
         ))}
       </div>
+
+      {/* Article Source & Original URL section */}
+      {(article.sourceName || article.url) && (
+        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium">
+          <div className="flex items-center space-x-2">
+            <Globe className="w-4 h-4 text-slate-500" />
+            <span className="text-slate-600 font-semibold">
+              {LOCALIZED_LABELS.source[language] || LOCALIZED_LABELS.source["bn"]}
+            </span>
+            <span className="bg-slate-200 text-slate-800 px-2.5 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider">
+              {article.sourceName || "The Bengali Pedia"}
+            </span>
+          </div>
+          {article.url && (
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-1.5 text-red-600 hover:text-red-700 font-bold hover:underline transition duration-150 cursor-pointer"
+            >
+              <span>{LOCALIZED_LABELS.viewOriginal[language] || LOCALIZED_LABELS.viewOriginal["bn"]}</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
+        </div>
+      )}
 
       {/* Fact-Checking rating verdict card */}
       {article.isFactCheck && article.factCheckRating && (
@@ -415,30 +454,60 @@ export function ArticleView({
 
       {/* Related articles carousel */}
       {relatedArticles.length > 0 && (
-        <div className="space-y-4 pt-6 border-t border-slate-200">
-          <h3 className="text-lg font-black text-slate-900 uppercase tracking-wider">
-            🔗 {LOCALIZED_LABELS.relatedArticles[language]}
+        <div className="space-y-6 pt-8 border-t border-slate-200">
+          <h3 className="text-lg font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <span>🔗</span> <span>{LOCALIZED_LABELS.relatedArticles[language]}</span>
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {relatedArticles.map((art) => {
               const trans = art.translations[language] || art.translations["bn"];
+              const cardDate = new Date(art.publishedAt).toLocaleDateString(
+                "bn-BD",
+                { month: "short", day: "numeric", year: "numeric" }
+              );
               return (
                 <div 
                   key={art.id}
                   onClick={() => onSelectArticle(art.id)}
-                  className="bg-white border border-slate-200 hover:border-red-600 p-4 rounded-2xl shadow-sm hover:shadow cursor-pointer transition flex flex-col justify-between"
+                  className="bg-white border border-slate-200 hover:border-red-600 rounded-2xl shadow-sm hover:shadow-md cursor-pointer transition duration-350 flex flex-col overflow-hidden group h-full justify-between"
                 >
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-bold uppercase text-red-600 font-mono">
-                      {art.category}
-                    </span>
-                    <h4 className="text-sm font-bold text-slate-900 leading-snug line-clamp-2">
-                      {trans.title}
-                    </h4>
+                  <div className="flex flex-col">
+                    {/* Thumbnail Image */}
+                    <div className="h-36 sm:h-40 w-full overflow-hidden bg-slate-50 relative">
+                      <img
+                        src={art.image}
+                        alt={trans.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover group-hover:scale-[1.03] transition duration-500"
+                        onError={(e) => handleImageLoadError(e, art.category)}
+                      />
+                    </div>
+
+                    {/* Card Content */}
+                    <div className="p-4 space-y-2.5">
+                      {/* Meta Tags & Badge */}
+                      <div className="flex justify-between items-center text-[10px] font-semibold text-slate-400 font-mono uppercase tracking-wider">
+                        <span className="bg-slate-50 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full">
+                          {art.category}
+                        </span>
+                        <div className="flex items-center space-x-1 text-slate-400">
+                          <Clock className="w-3 h-3" />
+                          <span>{art.readingTime} {LOCALIZED_LABELS.readTime[language]}</span>
+                        </div>
+                      </div>
+
+                      {/* Article Title */}
+                      <h4 className="text-sm font-black text-slate-900 leading-snug group-hover:text-red-650 transition duration-200 line-clamp-2">
+                        {trans.title}
+                      </h4>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-slate-400 mt-3 font-mono">
-                    {new Date(art.publishedAt).toLocaleDateString()}
-                  </span>
+
+                  {/* Card Footer */}
+                  <div className="px-4 pb-4 pt-2 border-t border-slate-50 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                    <span>{art.sourceName || "The Bengali Pedia"}</span>
+                    <span>{cardDate}</span>
+                  </div>
                 </div>
               );
             })}

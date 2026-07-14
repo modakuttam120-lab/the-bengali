@@ -266,15 +266,21 @@ function generateMockArticle(query: string, index: number): Article {
   const nowStr = new Date().toISOString();
   
   const titles: Record<Language, string> = {
-    bn: `প্রযুক্তি এবং অর্থনৈতিক উন্নয়ন: ভারতের নতুন প্রবৃদ্ধি নিয়ে বিশেষ রিপোর্ট (${query})`
+    bn: `প্রযুক্তি এবং অর্থনৈতিক উন্নয়ন: ভারতের নতুন প্রবৃদ্ধি নিয়ে বিশেষ রিপোর্ট (${query})`,
+    en: `Technology and Economic Development: Special Report on India's New Growth (${query})`,
+    hi: `प्रौद्योगिकी और आर्थिक विकास: भारत के नए विकास पर विशेष रिपोर्ट (${query})`
   };
 
   const desc: Record<Language, string> = {
-    bn: "ভারতের প্রযুক্তি খাত এবং সাম্প্রতিক অর্থনৈতিক সংস্কারের ফলে প্রবৃদ্ধি বৃদ্ধির রূপরেখা।"
+    bn: "ভারতের প্রযুক্তি খাত এবং সাম্প্রতিক অর্থনৈতিক সংস্কারের ফলে প্রবৃদ্ধি বৃদ্ধির রূপরেখা।",
+    en: "An outline of rising growth led by India's technology sector and recent economic reforms.",
+    hi: "भारत के प्रौद्योगिकी क्षेत्र और हालिया आर्थिक सुधारों के नेतृत्व में बढ़ते विकास की रूपरेखा।"
   };
 
   const cont: Record<Language, string> = {
-    bn: "প্রযুক্তিগত অগ্রগতি ভারতের অর্থনীতিকে বিশ্ব দরবারে নতুন উচ্চতায় নিয়ে যাচ্ছে। কলকাতা, ব্যাঙ্গালোর এবং দিল্লির মতো প্রধান কেন্দ্রগুলোতে এআই প্রযুক্তির প্রসার বাড়ছে। সাম্প্রতিক সমীক্ষা অনুযায়ী, এই প্রযুক্তিগত উন্নয়ন কর্মসংস্থান ও গ্রামীণ অর্থনীতিতে ইতিবাচক প্রভাব ফেলছে।"
+    bn: "প্রযুক্তিগত অগ্রগতি ভারতের অর্থনীতিকে বিশ্ব দরবারে নতুন উচ্চতায় নিয়ে যাচ্ছে। কলকাতা, ব্যাঙ্গালোর এবং দিল্লির মতো প্রধান কেন্দ্রগুলোতে এআই প্রযুক্তির প্রসার বাড়ছে। সাম্প্রতিক সমীক্ষা অনুযায়ী, এই প্রযুক্তিগত উন্নয়ন কর্মসংস্থান ও গ্রামীণ অর্থনীতিতে ইতিবাচক প্রভাব ফেলছে।",
+    en: "Technological advancements are steering India's economy to new heights globally. Major hubs like Kolkata, Bangalore, and Delhi are witnessing an expansion of AI technology. According to recent surveys, this technology development is positively impacting jobs and the rural economy.",
+    hi: "तकनीकी प्रगति भारत की अर्थव्यवस्था को वैश्विक स्तर पर नई ऊंचाइयों पर ले जा रही है। कोलकाता, बेंगलुरु और दिल्ली जैसे प्रमुख केंद्रों में एआई तकनीक का विस्तार हो रहा है। हालिया सर्वेक्षणों के अनुसार, यह तकनीकी विकास नौकरियों और ग्रामीण अर्थव्यवस्था को सकारात्मक रूप से प्रभावित कर रहा है।"
   };
 
   return {
@@ -296,6 +302,22 @@ function generateMockArticle(query: string, index: number): Article {
         aiSummary: "ভারতের প্রযুক্তি ও আর্থিক নীতিসমূহের কারণে জাতীয় প্রবৃদ্ধিতে ব্যাপক রূপান্তর দেখা যাচ্ছে।",
         tags: ["প্রযুক্তি", "অর্থনীতি", "ভারত"],
         keyPoints: ["কলকাতা ও ব্যাঙ্গালোরে নতুন টেক করিডোর গঠন।", "এআই প্রযুক্তির ব্যবহার ব্যাপক বৃদ্ধি পেয়েছে।"]
+      },
+      en: {
+        title: titles.en,
+        description: desc.en,
+        content: cont.en,
+        aiSummary: "India's technological and financial policies are undergoing a massive national growth transformation.",
+        tags: ["Technology", "Economy", "India"],
+        keyPoints: ["New tech corridors established in Kolkata and Bangalore.", "The usage of AI technology has expanded rapidly."]
+      },
+      hi: {
+        title: titles.hi,
+        description: desc.hi,
+        content: cont.hi,
+        aiSummary: "भारत की तकनीकी और वित्तीय नीतियां राष्ट्रीय विकास में व्यापक बदलाव ला रही हैं।",
+        tags: ["प्रौद्योगिकी", "अर्थव्यवस्था", "भारत"],
+        keyPoints: ["कोलकाता और बेंगलुरु में नए टेक कॉरिडोर का निर्माण।", "एआई तकनीक का उपयोग तेजी से बढ़ा है।"]
       }
     },
     isFeatured: false,
@@ -330,23 +352,23 @@ export async function translateAndEnrichArticle(
 
   try {
     const prompt = `
-You are an expert news translator and editor for "The Bengali Pedia".
-Your task is to take this source article and translate/enrich it into high-quality, professional, and journalistic Bengali (bn).
+You are an expert multilingual news translator and editor for "The Bengali Pedia".
+Your task is to take this source article and translate/enrich it into three target languages: Bengali (bn), English (en), and Hindi (hi).
 
 ORIGINAL LANGUAGE: ${originalLanguage}
 SOURCE TITLE: ${sourceTitle}
 SOURCE DESCRIPTION: ${sourceDesc}
 SOURCE CONTENT: ${sourceContent}
 
-Perform the following tasks:
-1. Translate the Title, Description, and Content accurately into Bengali (bn). Ensure the tone is high-quality, professional, and journalistic.
+Perform the following tasks for each language (bn, en, hi):
+1. Translate the Title, Description, and Content accurately into that language. Ensure the tone is high-quality, professional, and journalistic.
 2. Select the single best matching category from this list: ${CATEGORIES.join(", ")}. If none match, use "${fallbackCategory || "Current Affairs"}".
-3. Generate 3 to 5 smart tags/keywords in Bengali.
-4. Generate a 2-sentence AI-powered Summary in Bengali.
-5. Extract 3 high-impact Key Points in Bengali.
+3. Generate 3 to 5 smart tags/keywords in that language.
+4. Generate a 2-sentence AI-powered Summary in that language.
+5. Extract 3 high-impact Key Points in that language.
 6. Calculate a reasonable Reading Time (in minutes) based on article length.
 
-Respond strictly in the JSON schema requested.
+Respond strictly in the JSON schema requested with all translation objects fully populated.
 `;
 
     const response = await ai.models.generateContent({
@@ -377,9 +399,33 @@ Respond strictly in the JSON schema requested.
                     keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } }
                   },
                   required: ["title", "description", "content", "aiSummary", "tags", "keyPoints"]
+                },
+                en: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    content: { type: Type.STRING },
+                    aiSummary: { type: Type.STRING },
+                    tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } }
+                  },
+                  required: ["title", "description", "content", "aiSummary", "tags", "keyPoints"]
+                },
+                hi: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    content: { type: Type.STRING },
+                    aiSummary: { type: Type.STRING },
+                    tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    keyPoints: { type: Type.ARRAY, items: { type: Type.STRING } }
+                  },
+                  required: ["title", "description", "content", "aiSummary", "tags", "keyPoints"]
                 }
               },
-              required: ["bn"]
+              required: ["bn", "en", "hi"]
             }
           },
           required: ["category", "readingTime", "tags", "translations"]
@@ -416,18 +462,18 @@ export async function fetchAndProcessNews(): Promise<number> {
 
   if (apiKey) {
     try {
-      const q = '"West Bengal" OR "Kolkata" OR "পশ্চিমবঙ্গ" OR "কলকাতা" OR "ভারত" OR "রাজনীতি"';
-      addLog("info", `Querying GNews API with combined broad topics in Bengali: "${q}"...`, "GNews API");
+      const q = '"West Bengal" OR "Kolkata" OR "Indian Geopolitics" OR "Narendra Modi" OR "ISRO" OR "Indian Economy"';
+      addLog("info", `Querying GNews API in English (India country target): "${q}"...`, "GNews API");
       
       const res = await fetch(
-        `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=bn&max=10&apikey=${apiKey}`
+        `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=en&country=in&max=10&apikey=${apiKey}`
       );
       
       if (res.ok) {
         const data = await res.json();
         if (data.articles && data.articles.length > 0) {
-          fetchedArticles = data.articles;
-          addLog("info", `GNews API returned ${fetchedArticles.length} articles.`, "GNews API");
+          fetchedArticles = data.articles.map((art: any) => ({ ...art, language: "en" }));
+          addLog("info", `GNews API returned ${fetchedArticles.length} India-centric English articles.`, "GNews API");
         } else {
           addLog("warning", "GNews API returned zero articles. Checking fallback...", "GNews API");
         }
@@ -512,12 +558,48 @@ export async function fetchAndProcessNews(): Promise<number> {
   }
 
   // Now process fetched articles: avoid duplicates, enrich and translate via Gemini, save to DB
+  const BANGLADESH_DOMAINS = [
+    "bd-pratidin.com",
+    "prothomalo.com",
+    "bdnews24.com",
+    "banglanews24.com",
+    "jagonews24.com",
+    "jugantor.com",
+    "samakal.com",
+    "ittefaq.com",
+    "kalbela.com",
+    "somoynews.tv",
+    "channelionline.com",
+    "rtvonline.com",
+    "thedailystar.net",
+    "dhakatribune.com",
+    "tbsnews.net",
+    "independent24.tv",
+    "amadershomoy.com",
+    "nayadiganta.com",
+    "manabzamin.com",
+    "bhorerkagoj.com",
+    "dainikshiksha.com",
+    "inqilab.com",
+    "deshrupantor.com",
+    "risingbd.com",
+    "banglatribune.com",
+    "dhakapost.com",
+    "daily-sun.com",
+    "unb.com.bd",
+    "bssnews.net",
+    "kalerkantho.com"
+  ];
+
   let newlyAddedCount = 0;
   for (const rawArt of fetchedArticles) {
     // Check for Bangladesh filter exclusion
     const titleText = (rawArt.title || "").toLowerCase();
     const descText = (rawArt.description || "").toLowerCase();
     const contentText = (rawArt.content || "").toLowerCase();
+    const lowerUrl = (rawArt.url || "").toLowerCase();
+    const lowerSource = (rawArt.source?.name || rawArt.sourceName || "").toLowerCase();
+
     const blockList = ["bangladesh", "বাংলাদেশ", "dhaka", "ঢাকা", "hasina", "হাসিনা", "khaleda", "খালেদা", "sheikh hasina", "শেখ হাসিনা"];
     const matchesBlock = blockList.some(term => 
       titleText.includes(term) || 
@@ -525,8 +607,12 @@ export async function fetchAndProcessNews(): Promise<number> {
       contentText.includes(term)
     );
 
-    if (matchesBlock) {
-      addLog("info", `Skipping/Filtering out Bangladesh-related article: "${rawArt.title}"`, "News Service");
+    const hasBdDomain = BANGLADESH_DOMAINS.some(domain => lowerUrl.includes(domain));
+    const hasBdSuffix = lowerUrl.includes(".bd/") || lowerUrl.endsWith(".bd");
+    const hasBdSource = lowerSource.includes("bangladesh") || lowerSource.includes("dhaka") || lowerSource.includes("bd-") || lowerSource.includes("prothom alo") || lowerSource.includes("somoy");
+
+    if (matchesBlock || hasBdDomain || hasBdSuffix || hasBdSource) {
+      addLog("info", `Skipping/Filtering out Bangladesh-related article: "${rawArt.title}" (${rawArt.url || "no URL"})`, "News Service");
       continue;
     }
 
@@ -552,7 +638,7 @@ export async function fetchAndProcessNews(): Promise<number> {
         rawArt.title,
         rawArt.description,
         rawArt.content || rawArt.description,
-        "bn",
+        rawArt.language || "en",
         selectedCategory
       );
 
@@ -566,14 +652,33 @@ export async function fetchAndProcessNews(): Promise<number> {
 
     // Default translations if AI was disabled or failed
     if (!processedTranslations) {
+      const isBn = rawArt.language === "bn" || /[\u0980-\u09FF]/.test(rawArt.title);
+      const isHi = rawArt.language === "hi" || /[\u0900-\u097F]/.test(rawArt.title);
+
       processedTranslations = {
         bn: {
-          title: rawArt.title,
-          description: rawArt.description,
-          content: rawArt.content || rawArt.description,
+          title: isBn ? rawArt.title : `[অনুবাদ প্রক্রিয়াধীন] ${rawArt.title}`,
+          description: isBn ? rawArt.description : `[অনুবাদ প্রক্রিয়াধীন] ${rawArt.description}`,
+          content: isBn ? (rawArt.content || rawArt.description) : `[অনুবাদ প্রক্রিয়াধীন] ${rawArt.content || rawArt.description}`,
           aiSummary: "এআই সারাংশ বর্তমানে উপলব্ধ নয়।",
           tags: ["সংবাদ"],
           keyPoints: ["এই সংবাদটির অনুবাদ বর্তমানে প্রক্রিয়াধীন রয়েছে।"]
+        },
+        en: {
+          title: (!isBn && !isHi) ? rawArt.title : `[Translation Pending] ${rawArt.title}`,
+          description: (!isBn && !isHi) ? rawArt.description : `[Translation Pending] ${rawArt.description}`,
+          content: (!isBn && !isHi) ? (rawArt.content || rawArt.description) : `[Translation Pending] ${rawArt.content || rawArt.description}`,
+          aiSummary: "AI summary is currently unavailable.",
+          tags: ["News"],
+          keyPoints: ["The translation for this news is currently in progress."]
+        },
+        hi: {
+          title: isHi ? rawArt.title : `[अनुवाद प्रक्रियाधीन] ${rawArt.title}`,
+          description: isHi ? rawArt.description : `[अनुवाद प्रक्रियाधीन] ${rawArt.description}`,
+          content: isHi ? (rawArt.content || rawArt.description) : `[अनुवाद प्रक्रियाधीन] ${rawArt.content || rawArt.description}`,
+          aiSummary: "एआई सारांश वर्तमान में उपलब्ध नहीं है।",
+          tags: ["समाचार"],
+          keyPoints: ["इस समाचार का अनुवाद वर्तमान में प्रक्रियाधीन है।"]
         }
       };
     }
@@ -645,4 +750,98 @@ export function startAutoFetchScheduler() {
       addLog("error", `Background fetch failed: ${err.message}`, "Scheduler");
     });
   }, ms);
+}
+
+// Automatically heal any language-corrupted articles in db.json on boot
+export async function healDatabase() {
+  const db = getDb();
+  let updatedCount = 0;
+  const ai = getAiClient();
+
+  addLog("info", "Starting database translation self-healing check...", "Database Heal");
+
+  for (const article of db.articles) {
+    const bnTrans = article.translations?.bn;
+    const enTrans = article.translations?.en;
+    const hiTrans = article.translations?.hi;
+
+    // Detect if translations have been corrupted by Bengali content
+    const isEnCorrupted = !enTrans || !/[a-zA-Z]/.test(enTrans.title) || /[\u0980-\u09FF]/.test(enTrans.title);
+    const isHiCorrupted = !hiTrans || !/[\u0900-\u097F]/.test(hiTrans.title);
+
+    if (isEnCorrupted || isHiCorrupted) {
+      addLog("info", `Detected corrupted or missing translation for article: "${article.title}" (${article.id})`, "Database Heal");
+
+      if (db.settings.enableAiTranslation && ai) {
+        try {
+          addLog("info", `Attempting AI translation healing for article: "${article.title}"`, "Database Heal");
+          const enriched = await translateAndEnrichArticle(
+            bnTrans?.title || article.title,
+            bnTrans?.description || article.description,
+            bnTrans?.content || article.content,
+            "bn",
+            article.category
+          );
+
+          if (enriched) {
+            article.translations = enriched.translations;
+            article.category = enriched.category;
+            article.tags = enriched.tags;
+            article.readingTime = enriched.readingTime;
+            // Sync root level fields
+            article.title = enriched.translations.bn.title;
+            article.description = enriched.translations.bn.description;
+            article.content = enriched.translations.bn.content;
+            updatedCount++;
+            addLog("info", `Successfully healed article translations via AI: "${article.title}"`, "Database Heal");
+            continue;
+          }
+        } catch (err: any) {
+          addLog("error", `AI healing failed for article ${article.id}: ${err.message}`, "Database Heal");
+        }
+      }
+
+      // Offline Fallback Healing if AI is disabled or fails
+      const fallbackTitle = bnTrans?.title || article.title;
+      const fallbackDesc = bnTrans?.description || article.description;
+      const fallbackContent = bnTrans?.content || article.content;
+
+      article.translations = {
+        bn: {
+          title: fallbackTitle,
+          description: fallbackDesc,
+          content: fallbackContent,
+          aiSummary: bnTrans?.aiSummary || "এআই সারাংশ বর্তমানে উপলব্ধ নয়।",
+          tags: bnTrans?.tags || ["সংবাদ"],
+          keyPoints: bnTrans?.keyPoints || ["এই সংবাদটির অনুবাদ বর্তমানে প্রক্রিয়াধীন রয়েছে।"]
+        },
+        en: {
+          title: `[Translation Pending] ${fallbackTitle}`,
+          description: `[Translation Pending] ${fallbackDesc}`,
+          content: `[Translation Pending] ${fallbackContent}`,
+          aiSummary: "AI summary is currently unavailable.",
+          tags: ["News"],
+          keyPoints: ["The translation for this news is currently in progress."]
+        },
+        hi: {
+          title: `[अनुवाद प्रक्रियाधीन] ${fallbackTitle}`,
+          description: `[अनुवाद प्रक्रियाधीन] ${fallbackDesc}`,
+          content: `[अनुवाद प्रक्रियाधीन] ${fallbackContent}`,
+          aiSummary: "एआई सारांश वर्तमान में उपलब्ध नहीं है।",
+          tags: ["समाचार"],
+          keyPoints: ["इस समाचार का अनुवाद वर्तमान में प्रक्रियाधीन है।"]
+        }
+      };
+      
+      updatedCount++;
+      addLog("info", `Successfully healed article translations via offline fallback: "${article.title}"`, "Database Heal");
+    }
+  }
+
+  if (updatedCount > 0) {
+    writeDb(db);
+    addLog("info", `Database healing completed. ${updatedCount} articles corrected and updated in db.json.`, "Database Heal");
+  } else {
+    addLog("info", "Database translation self-healing check completed. All articles are clean.", "Database Heal");
+  }
 }

@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { createServer as createViteServer } from "vite";
 import { getDb, writeDb, addLog, getStats } from "./server/db";
-import { fetchAndProcessNews, startAutoFetchScheduler, translateAndEnrichArticle } from "./server/newsService";
+import { fetchAndProcessNews, startAutoFetchScheduler, translateAndEnrichArticle, healDatabase } from "./server/newsService";
 import { Article, Language, Comment } from "./src/types";
 import { GoogleGenAI } from "@google/genai";
 
@@ -56,6 +56,45 @@ async function startServer() {
       
       const db = getDb();
       let list = db.articles.filter(a => a.status === "published");
+
+      // Filter by language verification if targetLang is 'bn', 'hi', or 'en'
+      if (targetLang === "bn") {
+        list = list.filter(a => {
+          const t = a.translations["bn"];
+          return (
+            t &&
+            /[\u0980-\u09FF]/.test(t.title) &&
+            !t.title.includes("[অনুবাদ প্রক্রিয়াধীন]") &&
+            !t.title.includes("[Translation Pending]") &&
+            !t.title.includes("[अनुवाद प्रक्रियाधीन]")
+          );
+        });
+      } else if (targetLang === "hi") {
+        list = list.filter(a => {
+          const t = a.translations["hi"];
+          return (
+            t &&
+            /[\u0900-\u097F]/.test(t.title) &&
+            !/[\u0980-\u09FF]/.test(t.title) &&
+            !t.title.includes("[অনুবাদ প্রক্রিয়াধীন]") &&
+            !t.title.includes("[Translation Pending]") &&
+            !t.title.includes("[अनुवाद प्रक्रियाधीन]")
+          );
+        });
+      } else if (targetLang === "en") {
+        list = list.filter(a => {
+          const t = a.translations["en"];
+          return (
+            t &&
+            /[a-zA-Z]/.test(t.title) &&
+            !/[\u0980-\u09FF]/.test(t.title) &&
+            !/[\u0900-\u097F]/.test(t.title) &&
+            !t.title.includes("[অনুবাদ প্রক্রিয়াধীন]") &&
+            !t.title.includes("[Translation Pending]") &&
+            !t.title.includes("[अनुवाद प्रक्रियाधीन]")
+          );
+        });
+      }
 
       // Filter by category
       if (category) {
@@ -261,6 +300,45 @@ async function startServer() {
       
       const db = getDb();
       let list = db.articles.filter(a => a.status === "published");
+
+      // Filter by language verification if targetLang is 'bn', 'hi', or 'en'
+      if (targetLang === "bn") {
+        list = list.filter(a => {
+          const t = a.translations["bn"];
+          return (
+            t &&
+            /[\u0980-\u09FF]/.test(t.title) &&
+            !t.title.includes("[অনুবাদ প্রক্রিয়াধীন]") &&
+            !t.title.includes("[Translation Pending]") &&
+            !t.title.includes("[अनुवाद प्रक्रियाधीन]")
+          );
+        });
+      } else if (targetLang === "hi") {
+        list = list.filter(a => {
+          const t = a.translations["hi"];
+          return (
+            t &&
+            /[\u0900-\u097F]/.test(t.title) &&
+            !/[\u0980-\u09FF]/.test(t.title) &&
+            !t.title.includes("[অনুবাদ প্রক্রিয়াধীন]") &&
+            !t.title.includes("[Translation Pending]") &&
+            !t.title.includes("[अनुवाद प्रक्रियाधीन]")
+          );
+        });
+      } else if (targetLang === "en") {
+        list = list.filter(a => {
+          const t = a.translations["en"];
+          return (
+            t &&
+            /[a-zA-Z]/.test(t.title) &&
+            !/[\u0980-\u09FF]/.test(t.title) &&
+            !/[\u0900-\u097F]/.test(t.title) &&
+            !t.title.includes("[অনুবাদ প্রক্রিয়াধীন]") &&
+            !t.title.includes("[Translation Pending]") &&
+            !t.title.includes("[अनुवाद प्रक्रियाधीन]")
+          );
+        });
+      }
 
       if (category) {
         list = list.filter(a => a.category.toLowerCase() === (category as string).toLowerCase());
@@ -817,9 +895,16 @@ Sitemap: ${domain}/sitemap.xml
   });
 
   // Start server
-  app.listen(PORT, "0.0.0.0", () => {
+  app.listen(PORT, "0.0.0.0", async () => {
     console.log(`Server started successfully on port ${PORT}`);
     
+    // Automatically repair any corrupted or missing translations on launch
+    try {
+      await healDatabase();
+    } catch (err: any) {
+      console.error("Failed to run database healing routine:", err);
+    }
+
     // Boot up the news service automatic fetch scheduler
     startAutoFetchScheduler();
   });
