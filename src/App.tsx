@@ -18,13 +18,16 @@ import {
   SkeletonCard 
 } from "./components/SkeletonLoader";
 import SitemapView from "./components/SitemapView";
+import { 
+  AnimatePresence, motion 
+} from "motion/react";
 import { handleImageLoadError } from "./utils/imageFallback";
 import { 
   Article, Language 
 } from "./types";
 import { 
   TrendingUp, Newspaper, HelpCircle, Mail, Globe, Sparkles, AlertCircle, 
-  ChevronRight, Bookmark, ArrowRight, ShieldCheck, Heart 
+  ChevronRight, Bookmark, ArrowRight, ShieldCheck, Heart, ArrowUp, X 
 } from "lucide-react";
 
 const FONT_CLASSES = {
@@ -32,6 +35,12 @@ const FONT_CLASSES = {
   base: "text-base leading-relaxed md:text-lg",
   lg: "text-lg leading-relaxed md:text-xl",
   xl: "text-xl leading-relaxed md:text-2xl"
+};
+
+const LOCALIZED_BACK_TO_TOP = {
+  bn: "উপরে যান",
+  en: "Back to Top",
+  hi: "ऊपर जाएं"
 };
 
 const LOCALIZED_HOMEPAGE = {
@@ -109,9 +118,60 @@ export default function App() {
     }
   });
 
-  // Newsletter enrollment email status
+  // Newsletter enrollment email status & modal triggers
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
+  const [isNewsletterModalOpen, setIsNewsletterModalOpen] = useState(false);
+  const [hasSeenNewsletter, setHasSeenNewsletter] = useState(false);
+
+  // Monitor article reading time to pop the newsletter modal (after 30 seconds)
+  useEffect(() => {
+    if (viewState !== "article-view" || !selectedArticleId || hasSeenNewsletter || newsletterSubscribed) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setIsNewsletterModalOpen(true);
+      setHasSeenNewsletter(true);
+    }, 30000); // 30 seconds
+
+    return () => clearTimeout(timer);
+  }, [viewState, selectedArticleId, hasSeenNewsletter, newsletterSubscribed]);
+
+  // Floating Back to Top Button state
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [readProgress, setReadProgress] = useState(0);
+
+  // Monitor page scroll to show/hide the button and compute reading progress
+  useEffect(() => {
+    const handleScroll = () => {
+      // Back to top button visibility check
+      if (window.scrollY > 400) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+
+      // Reading progress calculation
+      if (viewState === "article-view") {
+        const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+        if (totalHeight > 0) {
+          const progress = (window.scrollY / totalHeight) * 100;
+          setReadProgress(Math.min(100, Math.max(0, progress)));
+        } else {
+          setReadProgress(0);
+        }
+      } else {
+        setReadProgress(0);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    // Trigger once on layout change to sync scroll position
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [viewState, selectedArticleId]);
 
   // Sync Bookmarks to LocalStorage
   useEffect(() => {
@@ -180,7 +240,12 @@ export default function App() {
     if (!newsletterEmail.trim()) return;
     setNewsletterSubscribed(true);
     setNewsletterEmail("");
-    setTimeout(() => setNewsletterSubscribed(false), 5000);
+    
+    // Auto-close modal after 4 seconds of displaying the success message
+    setTimeout(() => {
+      setIsNewsletterModalOpen(false);
+      setNewsletterSubscribed(false);
+    }, 4000);
   };
 
   // Filter Bookmarks articles locally
@@ -448,11 +513,14 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* NEWSLETTER FORM MODULE */}
+                  {/* NEWSLETTER FORM MODULE (Converted to compact promo trigger) */}
                   <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-sm space-y-4">
                     <div className="space-y-2">
-                      <Mail className="w-8 h-8 text-red-500" />
-                      <h3 className="text-lg font-bold leading-snug">
+                      <div className="flex items-center space-x-2">
+                        <Mail className="w-5 h-5 text-red-500 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-red-500 font-mono">Newsletter</span>
+                      </div>
+                      <h3 className="text-base font-bold leading-snug">
                         {LOCALIZED_HOMEPAGE.newsletterHeader[currentLanguage]}
                       </h3>
                       <p className="text-xs text-slate-300 leading-relaxed font-normal">
@@ -460,28 +528,15 @@ export default function App() {
                       </p>
                     </div>
 
-                    {newsletterSubscribed ? (
-                      <div className="bg-emerald-950 text-emerald-400 p-3 rounded-xl text-xs font-bold border border-emerald-900 text-center animate-pulse">
-                        {LOCALIZED_HOMEPAGE.subscribeSuccess[currentLanguage]}
-                      </div>
-                    ) : (
-                      <form onSubmit={handleNewsletterSubmit} className="space-y-2.5">
-                        <input
-                          type="email"
-                          required
-                          value={newsletterEmail}
-                          onChange={(e) => setNewsletterEmail(e.target.value)}
-                          placeholder="name@email.com"
-                          className="w-full bg-white/5 border border-white/10 rounded-full p-2.5 pl-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                        />
-                        <button
-                          type="submit"
-                          className="w-full bg-white hover:bg-red-600 text-slate-900 hover:text-white text-xs font-bold py-2.5 rounded-full shadow transition cursor-pointer"
-                        >
-                          {LOCALIZED_HOMEPAGE.subscribeBtn[currentLanguage]}
-                        </button>
-                      </form>
-                    )}
+                    <button
+                      onClick={() => setIsNewsletterModalOpen(true)}
+                      className="w-full bg-white hover:bg-red-600 text-slate-900 hover:text-white text-xs font-black py-2.5 rounded-full shadow-lg transition duration-300 cursor-pointer text-center uppercase tracking-wider"
+                      id="newsletter-promo-btn"
+                    >
+                      {newsletterSubscribed 
+                        ? LOCALIZED_HOMEPAGE.subscribeSuccess[currentLanguage] 
+                        : LOCALIZED_HOMEPAGE.subscribeBtn[currentLanguage]}
+                    </button>
                   </div>
 
                   {/* ABOUT THE PLATFORM DETAIL CARD */}
@@ -548,6 +603,160 @@ export default function App() {
 
         </div>
       </footer>
+
+      {/* Floating Back to Top Button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            key="back-to-top"
+            initial={{ opacity: 0, scale: 0.8, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 15 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-6 right-6 z-50 p-3.5 bg-red-600 hover:bg-red-750 text-white rounded-full shadow-2xl transition duration-300 cursor-pointer flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            aria-label={LOCALIZED_BACK_TO_TOP[currentLanguage]}
+            id="back-to-top-btn"
+          >
+            <ArrowUp className="w-5 h-5 transition-transform group-hover:-translate-y-0.5" />
+            <span className="max-w-0 overflow-hidden group-hover:max-w-28 group-hover:ml-2 transition-all duration-300 ease-out text-xs font-black whitespace-nowrap uppercase tracking-wider font-sans">
+              {LOCALIZED_BACK_TO_TOP[currentLanguage]}
+            </span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Thin Reading Progress Bar at the top of the screen */}
+      <AnimatePresence>
+        {viewState === "article-view" && (
+          <motion.div
+            key="reading-progress-bar"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-0 left-0 right-0 h-1 bg-slate-100/60 backdrop-blur-sm z-50 pointer-events-none"
+            id="reading-progress-container"
+          >
+            <div
+              className="h-full bg-red-600 transition-all duration-75 ease-out shadow-[0_1px_4px_rgba(220,38,38,0.4)]"
+              style={{ width: `${readProgress}%` }}
+              id="reading-progress-fill"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Newsletter non-intrusive Modal */}
+      <AnimatePresence>
+        {isNewsletterModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsNewsletterModalOpen(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm cursor-pointer"
+              id="newsletter-modal-backdrop"
+            />
+
+            {/* Modal Content Card */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="relative bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-slate-100 z-10 overflow-hidden"
+              id="newsletter-modal-card"
+            >
+              {/* Top Decorative Color Accent */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-red-600" />
+
+              {/* Close Button */}
+              <button
+                onClick={() => setIsNewsletterModalOpen(false)}
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition cursor-pointer"
+                aria-label="Close newsletter modal"
+                id="close-newsletter-modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {newsletterSubscribed ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="py-8 flex flex-col items-center text-center space-y-4"
+                  id="newsletter-modal-success"
+                >
+                  <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shadow-inner">
+                    <ShieldCheck className="w-10 h-10 animate-bounce" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-black text-slate-900">
+                      {currentLanguage === "bn" ? "নিবন্ধন সফল!" : currentLanguage === "hi" ? "पंजीकरण सफल!" : "Subscription Confirmed!"}
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium">
+                      {LOCALIZED_HOMEPAGE.subscribeSuccess[currentLanguage]}
+                    </p>
+                  </div>
+                </motion.div>
+              ) : (
+                <div className="space-y-6" id="newsletter-modal-content">
+                  {/* Header/Icon */}
+                  <div className="space-y-3 text-center">
+                    <div className="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+                      <Mail className="w-7 h-7" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-red-600 font-mono">
+                        {currentLanguage === "bn" ? "নিউজ বুলেটিন" : currentLanguage === "hi" ? "समाचार बुलेटिन" : "Weekly Bulletin"}
+                      </span>
+                      <h3 className="text-lg md:text-xl font-black text-slate-900 leading-snug">
+                        {LOCALIZED_HOMEPAGE.newsletterHeader[currentLanguage]}
+                      </h3>
+                      <p className="text-xs text-slate-500 leading-relaxed font-normal">
+                        {LOCALIZED_HOMEPAGE.newsletterDesc[currentLanguage]}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Form */}
+                  <form onSubmit={handleNewsletterSubmit} className="space-y-3">
+                    <div className="relative">
+                      <input
+                        type="email"
+                        required
+                        value={newsletterEmail}
+                        onChange={(e) => setNewsletterEmail(e.target.value)}
+                        placeholder="name@email.com"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 pl-5 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 transition"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-black py-3 rounded-xl shadow-lg shadow-red-600/20 transition duration-300 cursor-pointer uppercase tracking-wider text-center"
+                    >
+                      {LOCALIZED_HOMEPAGE.subscribeBtn[currentLanguage]}
+                    </button>
+                  </form>
+
+                  {/* Footnote */}
+                  <p className="text-[10px] text-slate-400 text-center font-normal">
+                    {currentLanguage === "bn" 
+                      ? "আমরা আপনার তথ্যের সুরক্ষা নিশ্চিত করি। যেকোনো সময় আনসাবস্ক্রাইব করতে পারবেন।" 
+                      : currentLanguage === "hi" 
+                      ? "हम आपकी गोपनीयता का सम्मान करते हैं। आप किसी भी समय सदस्यता समाप्त कर सकते हैं।" 
+                      : "We value your privacy. You can unsubscribe at any time."}
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
