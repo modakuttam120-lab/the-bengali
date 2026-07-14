@@ -187,6 +187,35 @@ export function getDb(): DatabaseSchema {
 
     // Ensure all required top-level fields are present
     if (!parsed.articles) parsed.articles = SEED_ARTICLES;
+
+    // Sanitize any articles having '[অনুবাদ]' tags
+    if (parsed.articles) {
+      let madeChanges = false;
+      parsed.articles.forEach(a => {
+        if (a.title && a.title.startsWith("[অনুবাদ]")) {
+          a.title = a.title.replace(/^\[অনুবাদ\]\s*/, "");
+          madeChanges = true;
+        }
+        if (a.translations) {
+          for (const lang of Object.keys(a.translations)) {
+            const trans = a.translations[lang as Language];
+            if (trans && trans.title && trans.title.startsWith("[অনুবাদ]")) {
+              trans.title = trans.title.replace(/^\[অনুবাদ\]\s*/, "");
+              madeChanges = true;
+            }
+          }
+        }
+      });
+      // Save cleaned DB back if we found and stripped any tags
+      if (madeChanges) {
+        try {
+          fs.writeFileSync(DB_FILE, JSON.stringify(parsed, null, 2), "utf8");
+        } catch (e) {
+          console.error("Failed to write sanitized db back to file", e);
+        }
+      }
+    }
+
     if (!parsed.comments) parsed.comments = SEED_COMMENTS;
     if (!parsed.settings) {
       parsed.settings = DEFAULT_SETTINGS;

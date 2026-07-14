@@ -404,23 +404,23 @@ export async function fetchAndProcessNews(): Promise<number> {
 
   addLog("info", "Starting GNews aggregation cycle...", "News Service");
 
-  // Define queries based on Bengal & Indian Geopolitical context
+  // Define queries based on Bengal & Indian Geopolitical context in Bengali and English
   const queries = [
-    "West Bengal politics",
-    "India diplomacy geopolitics",
-    "Indian tech startup AI",
-    "India defense economy"
+    "পশ্চিমবঙ্গ রাজনীতি",
+    "ভারত কূটনীতি ভূরাজনীতি",
+    "ভারতীয় প্রযুক্তি স্টার্টআপ এআই",
+    "ভারত প্রতিরক্ষা অর্থনীতি"
   ];
 
   let fetchedArticles: any[] = [];
 
   if (apiKey) {
     try {
-      const q = '"West Bengal politics" OR "India geopolitics" OR "India tech AI" OR "India economy"';
-      addLog("info", `Querying GNews API with combined broad topics: "${q}"...`, "GNews API");
+      const q = '"West Bengal" OR "Kolkata" OR "পশ্চিমবঙ্গ" OR "কলকাতা" OR "ভারত" OR "রাজনীতি"';
+      addLog("info", `Querying GNews API with combined broad topics in Bengali: "${q}"...`, "GNews API");
       
       const res = await fetch(
-        `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=en&country=in&max=10&apikey=${apiKey}`
+        `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=bn&max=10&apikey=${apiKey}`
       );
       
       if (res.ok) {
@@ -440,18 +440,21 @@ export async function fetchAndProcessNews(): Promise<number> {
     }
   }
 
-  // If GNews API key is missing or failed, and Gemini is available, use Gemini to create realistic articles!
+  // If GNews API key is missing or failed, and Gemini is available, use Gemini to create realistic articles in Bengali!
   if (fetchedArticles.length === 0 && ai) {
     try {
-      addLog("info", "Using Gemini API to synthesize fresh world news (Simulated GNews Feed)...", "Gemini AI");
+      addLog("info", "Using Gemini API to synthesize fresh world news in Bengali...", "Gemini AI");
       const categoryHint = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
       const synthPrompt = `
-      You are acting as an real-time international GNews aggregator.
+      You are acting as a real-time international GNews aggregator for "The Bengali Pedia".
       Generate a list of 4 highly realistic, engaging, professional, and up-to-date journalistic articles about India, West Bengal, and global geopolitics/technology.
       Avoid duplicating existing topics. Ensure topics feel extremely real and current.
       Focus topics around: West Bengal development, Indian governance, Global diplomacy, or New AI research in India.
-      Include a realistic image URL from Unsplash matching the topic, an author name, and source name.
-      Provide them in English.
+      Include a realistic image URL from Unsplash matching the topic, a realistic author name, and source name.
+      
+      CRITICAL REQUIREMENTS:
+      1. All text fields (title, description, content, author, sourceName, category) MUST be written in high-quality, professional, and natural Bengali (bn).
+      2. STICK STRICTLY TO WEST BENGAL & INDIAN TOPICS. DO NOT generate any articles or content related to Bangladesh under any circumstances.
       `;
 
       const response = await ai.models.generateContent({
@@ -511,6 +514,22 @@ export async function fetchAndProcessNews(): Promise<number> {
   // Now process fetched articles: avoid duplicates, enrich and translate via Gemini, save to DB
   let newlyAddedCount = 0;
   for (const rawArt of fetchedArticles) {
+    // Check for Bangladesh filter exclusion
+    const titleText = (rawArt.title || "").toLowerCase();
+    const descText = (rawArt.description || "").toLowerCase();
+    const contentText = (rawArt.content || "").toLowerCase();
+    const blockList = ["bangladesh", "বাংলাদেশ", "dhaka", "ঢাকা", "hasina", "হাসিনা", "khaleda", "খালেদা", "sheikh hasina", "শেখ হাসিনা"];
+    const matchesBlock = blockList.some(term => 
+      titleText.includes(term) || 
+      descText.includes(term) || 
+      contentText.includes(term)
+    );
+
+    if (matchesBlock) {
+      addLog("info", `Skipping/Filtering out Bangladesh-related article: "${rawArt.title}"`, "News Service");
+      continue;
+    }
+
     // Check for title duplicate
     const isDuplicate = db.articles.some(
       existing => 
@@ -533,7 +552,7 @@ export async function fetchAndProcessNews(): Promise<number> {
         rawArt.title,
         rawArt.description,
         rawArt.content || rawArt.description,
-        "en",
+        "bn",
         selectedCategory
       );
 
@@ -549,7 +568,7 @@ export async function fetchAndProcessNews(): Promise<number> {
     if (!processedTranslations) {
       processedTranslations = {
         bn: {
-          title: `[অনুবাদ] ${rawArt.title}`,
+          title: rawArt.title,
           description: rawArt.description,
           content: rawArt.content || rawArt.description,
           aiSummary: "এআই সারাংশ বর্তমানে উপলব্ধ নয়।",
