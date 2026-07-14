@@ -188,9 +188,30 @@ export function getDb(): DatabaseSchema {
     // Ensure all required top-level fields are present
     if (!parsed.articles) parsed.articles = SEED_ARTICLES;
 
-    // Sanitize any articles having '[অনুবাদ]' tags
+    // Sanitize any articles having '[অনুবাদ]' tags or related to Bangladesh
     if (parsed.articles) {
       let madeChanges = false;
+      const initialLength = parsed.articles.length;
+
+      // Filter out Bangladesh-related articles
+      const blockList = ["bangladesh", "বাংলাদেশ", "dhaka", "ঢাকা", "hasina", "হাসিনা", "khaleda", "খালেদা", "sheikh hasina", "শেখ হাসিনা"];
+      parsed.articles = parsed.articles.filter(a => {
+        const titleText = (a.title || "").toLowerCase();
+        const descText = (a.description || "").toLowerCase();
+        const contentText = (a.content || "").toLowerCase();
+        
+        const matchesBlock = blockList.some(term => 
+          titleText.includes(term) || 
+          descText.includes(term) || 
+          contentText.includes(term)
+        );
+        return !matchesBlock;
+      });
+
+      if (parsed.articles.length !== initialLength) {
+        madeChanges = true;
+      }
+
       parsed.articles.forEach(a => {
         if (a.title && a.title.startsWith("[অনুবাদ]")) {
           a.title = a.title.replace(/^\[অনুবাদ\]\s*/, "");
@@ -206,7 +227,8 @@ export function getDb(): DatabaseSchema {
           }
         }
       });
-      // Save cleaned DB back if we found and stripped any tags
+
+      // Save cleaned DB back if we found and stripped any tags or removed articles
       if (madeChanges) {
         try {
           fs.writeFileSync(DB_FILE, JSON.stringify(parsed, null, 2), "utf8");
